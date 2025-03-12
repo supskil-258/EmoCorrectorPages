@@ -1,295 +1,536 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-<meta charset="utf-8">
-<meta name="generator" content="Hugo 0.66.0" />
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet" type="text/css">
-<link rel="stylesheet" href="css/normalize.css">
-<link rel="stylesheet" href="css/skeleton.css">
-<link rel="stylesheet" href="css/custom.css">
-<link rel="alternate" href="index.xml" type="application/rss+xml" title="Speech Research">
-<link rel="shortcut icon" href="/favicon.png" type="image/x-icon" />
-<title>EmoCorrector</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="generator" content="Hugo 0.66.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/skeleton.css">
+  <link rel="stylesheet" href="css/custom.css">
+  <link rel="alternate" href="index.xml" type="application/rss+xml" title="Speech Research">
+  <link rel="shortcut icon" href="/favicon.png" type="image/x-icon" />
+  <title>EmoCorrector</title>
 
-<style>
-  .arrow {
-    font-size: 1.5em;
-    color: #007BFF;
-    font-weight: bold;
-    margin: 0 15px;
-    vertical-align: middle;
-  }
-  .audio-container {
-    text-align: center;
-  }
-  .audio-container audio {
-    display: inline-block;
-    vertical-align: middle;
-  }
-  hr {
-    margin: 20px 0;
-    border: 0;
-    border-top: 1px solid #ddd;
-  }
-  .pdf-container {
-    text-align: center;
-    margin: 20px 0;
-  }
-  table.similarity-table {
-    margin: 25px auto;
-    width: 60%;
-    border-collapse: collapse;
-  }
-  table.similarity-table th,
-  table.similarity-table td {
-    padding: 12px;
-    border: 1px solid #ddd;
-    text-align: center;
-  }
-  table.similarity-table th {
-    background-color: #f5f5f5;
-  }
-  .notice-box {
-    background-color: #fff3cd;
-    border-left: 4px solid #ffeeba;
-    padding: 15px;
-    margin: 20px 0;
-    border-radius: 4px;
-  }
-  .notice-box p {
-    color: #856404;
-    margin: 0;
-    font-size: 0.95em;
-  }
-</style>
+  <style>
+    /* 整体排版 */
+    .arrow {
+      font-size: 1.5em;
+      color: #007BFF;
+      font-weight: bold;
+      margin: 0 15px;
+      vertical-align: middle;
+    }
+    hr {
+      margin: 20px 0;
+      border: 0;
+      border-top: 1px solid #ddd;
+    }
+    .notice-box {
+      background-color: #fff3cd;
+      border-left: 4px solid #ffeeba;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+      text-align: center;
+    }
+    /* 每一行的音频样本及箭头 */
+    .audio-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: nowrap;
+    }
+    /* 单个音频块：左右分为标签和内容 */
+    .audio-box {
+      display: flex;
+      width: 30%;
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+    }
+    .audio-label {
+      width: 100px;
+      text-align: right;
+      padding-right: 10px;
+      font-weight: bold;
+      flex-shrink: 0;
+      align-self: center;
+    }
+    .audio-content {
+      flex-grow: 1;
+    }
+    /* 转录文本放在播放器上方 */
+    .audio-transcript {
+      margin-bottom: 5px;
+      font-style: italic;
+      font-size: 0.95em;
+      text-align: left;
+    }
+    /* 播放器样式 */
+    .audio-content audio {
+      width: 100%;
+      margin: 0 auto;
+      display: block;
+    }
+    /* 播放器下方描述 */
+    .audio-desc {
+      margin-top: 5px;
+      font-style: italic;
+      font-size: 0.9em;
+      text-align: left;
+    }
+    /* 箭头块样式 */
+    .arrow-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      flex-shrink: 0;
+    }
+    .arrow-box .arrow-label {
+      font-size: 0.9em;
+      margin-bottom: 5px;
+      text-align: center;
+      color: #333;
+    }
+    .arrow-box .arrow-icon {
+      font-size: 1.5em;
+      color: #007BFF;
+    }
+    /* 其他区域样式 */
+    .pdf-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+    table.similarity-table {
+      margin: 25px auto;
+      width: 60%;
+      border-collapse: collapse;
+    }
+    table.similarity-table th,
+    table.similarity-table td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    table.similarity-table th {
+      background-color: #f5f5f5;
+    }
+  </style>
 </head>
 
 <body>
 
 <div class="container">
+  <header role="banner"></header>
+  <main role="main">
+    <article itemscope itemtype="https://schema.org/BlogPosting">
+      <h1 class="entry-title" itemprop="headline">
+        Towards Emotionally Consistent Text-Based Speech Editing:
+        Introducing EmoCorrector and ECD-TSE Dataset
+      </h1>
+      <section itemprop="entry-text">
+        <br>
+        <!-- Code and Paper Links -->
+        <div class="column has-text-centered">
+          <div class="publication-links" style="display: flex; justify-content: center; gap: 20px;">
+            <a href="" class="external-link button is-normal is-rounded" target="_blank" style="background-color: #333; color: white; padding: 12px 25px; border-radius: 30px; text-transform: uppercase; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); display: flex; align-items: center; gap: 10px;">
+              <span class="icon" style="font-size: 20px;"><i class="ai ai-arxiv"></i></span>
+              <span>Paper</span>
+            </a>
+            <a href="https://github.com/supskil-258/EmoCorrector" class="external-link button is-normal is-rounded" target="_blank" style="background-color: #333; color: white; padding: 12px 25px; border-radius: 30px; text-transform: uppercase; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); display: flex; align-items: center; gap: 10px;">
+              <span class="icon" style="font-size: 20px;"><i class="fab fa-github"></i></span>
+              <span>Code&Model</span>
+            </a>
+          </div>
+        </div>
+        <h2 id="audio-samples">Audio Samples</h2>
+        <hr>
+        <div class="notice-box">
+          <p>Due to equipment failure, more demos are not available for now. We will showcase more demos once the issue is resolved.</p>
+        </div>
 
-	<header role="banner"></header>
+        <!-- 第一行：A3T -->
+        <div class="audio-row">
+          <!-- Origin -->
+          <div class="audio-box">
+            <div class="audio-label">Origin:</div>
+            <div class="audio-content">
+              <div class="audio-transcript">How was your lonely trip?</div>
+              <audio controls>
+                <source src="audio/3/origin/001_6_000159.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Sad，Audio：Sad</div>
+            </div>
+          </div>
+          <!-- 箭头：Speech Editing -->
+          <div class="arrow-box">
+            <div class="arrow-label">Speech Editing</div>
+            <div class="arrow-icon">→</div>
+          </div>
+          <!-- A3T (Before Correction) -->
+          <div class="audio-box">
+            <div class="audio-label">A3T (Before):</div>
+            <div class="audio-content">
+              <div class="audio-transcript">How was your fantastic trip?</div>
+              <audio controls>
+                <source src="audio/3/A3T/001_6_000159.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Happy，Audio：Sad</div>
+            </div>
+          </div>
+          <!-- 箭头：Emotion correction -->
+          <div class="arrow-box">
+            <div class="arrow-label">Emotion correction</div>
+            <div class="arrow-icon">→</div>
+          </div>
+          <!-- A3T (After Correction) -->
+          <div class="audio-box">
+            <div class="audio-label">A3T (After):</div>
+            <div class="audio-content">
+              <div class="audio-transcript">How was your fantastic trip?</div>
+              <audio controls>
+                <source src="audio/3/A3T/emotion_transferred_output.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Happy，Audio：Happy</div>
+            </div>
+          </div>
+        </div>
 
-	<main role="main">
-		<article itemscope itemtype="https://schema.org/BlogPosting">
-            <h1 class="entry-title" itemprop="headline">Towards Emotionally Consistent Text-Based Speech Editing:
-              Introducing EmoCorrector and ECD-TSE Dataset</h1>
-			<section itemprop="entry-text">
-				<br>
+        <!-- 第二行：FluentSpeech -->
+        <div class="audio-row">
+          <!-- Origin -->
+          <div class="audio-box">
+            <div class="audio-label">Origin:</div>
+            <div class="audio-content">
+              <div class="audio-transcript">How was your lonely trip?</div>
+              <audio controls>
+                <source src="audio/3/origin/001_6_000159.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Sad，Audio：Sad</div>
+            </div>
+          </div>
+          <!-- 箭头：Speech Editing -->
+          <div class="arrow-box">
+            <div class="arrow-label">Speech Editing</div>
+            <div class="arrow-icon">→</div>
+          </div>
+          <!-- FluentSpeech (Before Correction) -->
+          <div class="audio-box">
+            <div class="audio-label">FluentSpeech (Before):</div>
+            <div class="audio-content">
+              <div class="audio-transcript">How was your fantastic trip?</div>
+              <audio controls>
+                <source src="audio/3/fluentspeech/001_6_000159.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Happy，Audio：Sad</div>
+            </div>
+          </div>
+          <!-- 箭头：Emotion correction -->
+          <div class="arrow-box">
+            <div class="arrow-label">Emotion correction</div>
+            <div class="arrow-icon">→</div>
+          </div>
+          <!-- FluentSpeech (After Correction) -->
+          <div class="audio-box">
+            <div class="audio-label">FluentSpeech (After):</div>
+            <div class="audio-content">
+              <div class="audio-transcript">How was your fantastic trip?</div>
+              <audio controls>
+                <source src="audio/3/fluentspeech/emotion_transferred_output.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Happy，Audio：Happy</div>
+            </div>
+          </div>
+        </div>
 
-<!-- Section for Code and Paper Links -->
-<div class="column has-text-centered">
-  <div class="publication-links" style="display: flex; justify-content: center; gap: 20px;">
-    <a href="" class="external-link button is-normal is-rounded" target="_blank" style="background-color: #333; color: white; padding: 12px 25px; border-radius: 30px; text-transform: uppercase; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); display: flex; align-items: center; gap: 10px;">
-      <span class="icon" style="font-size: 20px;">
-        <i class="ai ai-arxiv"></i>
-      </span>
-      <span>Paper</span>
-    </a>
+        <!-- 第三行：VoiceCraft -->
+        <div class="audio-row">
+          <!-- Origin -->
+          <div class="audio-box">
+            <div class="audio-label">Origin:</div>
+            <div class="audio-content">
+              <div class="audio-transcript">How was your lonely trip?</div>
+              <audio controls>
+                <source src="audio/3/origin/001_6_000159.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Sad，Audio：Sad</div>
+            </div>
+          </div>
+          <!-- 箭头：Speech Editing -->
+          <div class="arrow-box">
+            <div class="arrow-label">Speech Editing</div>
+            <div class="arrow-icon">→</div>
+          </div>
+          <!-- VoiceCraft (Before Correction) -->
+          <div class="audio-box">
+            <div class="audio-label">VoiceCraft (Before):</div>
+            <div class="audio-content">
+              <div class="audio-transcript">How was your fantastic trip?</div>
+              <audio controls>
+                <source src="audio/3/voicecraft/edited.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Happy，Audio：Sad</div>
+            </div>
+          </div>
+          <!-- 箭头：Emotion correction -->
+          <div class="arrow-box">
+            <div class="arrow-label">Emotion correction</div>
+            <div class="arrow-icon">→</div>
+          </div>
+          <!-- VoiceCraft (After Correction) -->
+          <div class="audio-box">
+            <div class="audio-label">VoiceCraft (After):</div>
+            <div class="audio-content">
+              <div class="audio-transcript">How was your fantastic trip?</div>
+              <audio controls>
+                <source src="audio/3/voicecraft/emotion_transferred_output.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Happy，Audio：Happy</div>
+            </div>
+          </div>
+        </div>
+        <hr>
 
-    <a href="https://github.com/supskil-258/EmoCorrector" class="external-link button is-normal is-rounded" target="_blank" style="background-color: #333; color: white; padding: 12px 25px; border-radius: 30px; text-transform: uppercase; font-size: 16px; font-weight: bold; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); display: flex; align-items: center; gap: 10px;">
-      <span class="icon" style="font-size: 20px;">
-        <i class="fab fa-github"></i>
-      </span>
-      <span>Code&Model</span>
-    </a>
-  </div>
-</div>
+        <!-- 第一行：A3T -->
+        <div class="audio-row">
+          <!-- Origin -->
+          <div class="audio-box">
+            <div class="audio-label">Origin:</div>
+            <div class="audio-content">
+              <div class="audio-transcript">My friend cooks dinner at home.</div>
+              <audio controls>
+                <source src="audio/5/a3t/002_1_000053_ref.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Neutral，Audio：Neutral</div>
+            </div>
+          </div>
+          <!-- 箭头：Speech Editing -->
+          <div class="arrow-box">
+            <div class="arrow-label">Speech Editing</div>
+            <div class="arrow-icon">→</div>
+          </div>
+          <!-- A3T (Before Correction) -->
+          <div class="audio-box">
+            <div class="audio-label">A3T (Before):</div>
+            <div class="audio-content">
+              <div class="audio-transcript">My friend ruins dinner at home.</div>
+              <audio controls>
+                <source src="audio/5/a3t/002_1_000053.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Angry，Audio：Neutral</div>
+            </div>
+          </div>
+          <!-- 箭头：Emotion correction -->
+          <div class="arrow-box">
+            <div class="arrow-label">Emotion correction</div>
+            <div class="arrow-icon">→</div>
+          </div>
+          <!-- A3T (After Correction) -->
+          <div class="audio-box">
+            <div class="audio-label">A3T (After):</div>
+            <div class="audio-content">
+              <div class="audio-transcript">My friend ruins dinner at home.</div>
+              <audio controls>
+                <source src="audio/5/a3t/emotion_transferred_output.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Angry，Audio：Angry</div>
+            </div>
+          </div>
+        </div>
 
-<h2 id="audio-samples">Audio Samples</h2>
-<hr>
-<div class="notice-box">
-  <p>Due to equipment failure, more demos are not available for now. We will showcase more demos once the issue is resolved.</p>
-</div>
+        <!-- 第二行：FluentSpeech -->
+        <div class="audio-row">
+          <!-- Origin -->
+          <div class="audio-box">
+            <div class="audio-label">Origin:</div>
+            <div class="audio-content">
+              <div class="audio-transcript">My friend cooks dinner at home.</div>
+              <audio controls>
+                <source src="audio/5/fluentspeech/002_1_000053_ref.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Neutral，Audio：Neutral</div>
+            </div>
+          </div>
+          <!-- 箭头：Speech Editing -->
+          <div class="arrow-box">
+            <div class="arrow-label">Speech Editing</div>
+            <div class="arrow-icon">→</div>
+          </div>
+          <!-- FluentSpeech (Before Correction) -->
+          <div class="audio-box">
+            <div class="audio-label">FluentSpeech (Before):</div>
+            <div class="audio-content">
+              <div class="audio-transcript">My friend ruins dinner at home.</div>
+              <audio controls>
+                <source src="audio/5/fluentspeech/002_1_000053.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Angry，Audio：Neutral</div>
+            </div>
+          </div>
+          <!-- 箭头：Emotion correction -->
+          <div class="arrow-box">
+            <div class="arrow-label">Emotion correction</div>
+            <div class="arrow-icon">→</div>
+          </div>
+          <!-- FluentSpeech (After Correction) -->
+          <div class="audio-box">
+            <div class="audio-label">FluentSpeech (After):</div>
+            <div class="audio-content">
+              <div class="audio-transcript">My friend ruins dinner at home.</div>
+              <audio controls>
+                <source src="audio/5/fluentspeech/emotion_transferred_output.wav" type="audio/wav">
+              </audio>
+              <div class="audio-desc">Text: Angry，Audio：Angry</div>
+            </div>
+          </div>
+        </div>
 
-<div class="audio-container">
-  <p><strong>Origin Text:</strong> How was your lonely trip?
-     <audio controls="controls">
-       <source src="audio/3/origin/001_6_000159.wav" type="audio/wav" />
-     </audio>
-     <span class="arrow">→</span> <strong>Edited Text:</strong> How was your <strong>fantastic</strong> trip?
-  </p>
-</div>
 
-<table>
-<thead>
-<tr>
-<th style="text-align: center">A3T(Before Correction)</th>
-<th style="text-align: center">A3T(After Correction)</th>
-<th style="text-align: center">FluentSpeech(Before Correction)</th>
-<th style="text-align: center">FluentSpeech(After Correction)</th>
-<th style="text-align: center">VoiceCraft(Before Correction)</th>
-<th style="text-align: center">VoiceCraft(After Correction)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: center">
-  <audio controls="controls">
-    <source src="audio/3/A3T/001_6_000159.wav" type="audio/wav" />
-  </audio>
-</td>
-<td style="text-align: center">
-  <audio controls="controls">
-    <source src="audio/3/A3T/emotion_transferred_output.wav" type="audio/wav" />
-  </audio>
-</td>
-<td style="text-align: center">
-  <audio controls="controls">
-    <source src="audio/3/fluentspeech/001_6_000159.wav" type="audio/wav" />
-  </audio>
-</td>
-<td style="text-align: center">
-  <audio controls="controls">
-    <source src="audio/3/fluentspeech/emotion_transferred_output.wav" type="audio/wav" />
-  </audio>
-</td>
-<td style="text-align: center">
-  <audio controls="controls">
-    <source src="audio/3/voicecraft/edited.wav" type="audio/wav" />
-  </audio>
-</td>
-<td style="text-align: center">
-  <audio controls="controls">
-    <source src="audio/3/voicecraft/emotion_transferred_output.wav" type="audio/wav" />
-  </audio>
-</td>
-</tr>
-</tbody>
-</table>
+        <hr>
 
-<h2 id="emoCLAP">EmoCLAP loss_curve</h2>
 
-<div style="display: flex; justify-content: space-between;">
-  <div class="image-container" style="flex: 1; padding: 10px;">
-    <img src="images/trainloss.png" width="70%" height="auto" style="display: block; margin: 0 auto;">
-  </div>
-  <div class="image-container" style="flex: 1; padding: 10px;">
-    <img src="images/valloss.png" width="70%" height="auto" style="display: block; margin: 0 auto;">
-  </div>
-</div>
 
-<h2 id="speaker-similarity">Speaker Similarity Before and After Emotional Correction</h2>
-<p>We used the pre-trained WavLM model to extract speaker embeddings before and after emotional correction, then calculated their cosine similarity. The results are as follows:</p>
+        <h2 id="emoCLAP">EmoCLAP loss_curve</h2>
+        <div style="display: flex; justify-content: space-between;">
+          <div class="image-container" style="flex: 1; padding: 10px;">
+            <img src="images/trainloss.png" width="70%" height="auto" style="display: block; margin: 0 auto;">
+          </div>
+          <div class="image-container" style="flex: 1; padding: 10px;">
+            <img src="images/valloss.png" width="70%" height="auto" style="display: block; margin: 0 auto;">
+          </div>
+        </div>
 
-<table class="similarity-table">
-  <thead>
-    <tr>
-      <th>Model</th>
-      <th>Similarity</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>editspeech</td>
-      <td>0.933</td>
-    </tr>
-    <tr>
-      <td>A3T</td>
-      <td>0.924</td>
-    </tr>
-    <tr>
-      <td>FluentSpeech</td>
-      <td>0.921</td>
-    </tr>
-    <tr>
-      <td>VoiceCraft</td>
-      <td>0.902</td>
-    </tr>
-  </tbody>
-</table>
+        <h2 id="speaker-similarity">Speaker Similarity Before and After Emotional Correction</h2>
+        <p>
+          We used the pre-trained WavLM model to extract speaker embeddings before and after emotional correction, then calculated their cosine similarity. The results are as follows:
+        </p>
+        <table class="similarity-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Similarity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>editspeech</td>
+              <td>0.933</td>
+            </tr>
+            <tr>
+              <td>A3T</td>
+              <td>0.924</td>
+            </tr>
+            <tr>
+              <td>FluentSpeech</td>
+              <td>0.921</td>
+            </tr>
+            <tr>
+              <td>VoiceCraft</td>
+              <td>0.902</td>
+            </tr>
+          </tbody>
+        </table>
 
-<h2 id="evc-comparison">Comparison of EVC systems</h2>
-<p>We compare the EVC-converted samples with the emotion-corrected samples, and the experimental results in terms of TSEAcc are shown in Table：</p>
+        <h2 id="evc-comparison">Comparison of EVC systems</h2>
+        <p>
+          We compare the EVC-converted samples with the emotion-corrected samples, and the experimental results in terms of TSEAcc are shown in Table：
+        </p>
+        <table class="similarity-table">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Cycle-GAN</th>
+              <th>VAW-GAN</th>
+              <th>Emocorrector(Ours)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>EditSpeech</td>
+              <td>10.2%</td>
+              <td>9.8%</td>
+              <td>47.5%</td>
+            </tr>
+            <tr>
+              <td>A3T</td>
+              <td>9.8%</td>
+              <td>9.1%</td>
+              <td>49.3%</td>
+            </tr>
+            <tr>
+              <td>FluentSpeech</td>
+              <td>8.8%</td>
+              <td>8.3%</td>
+              <td>46.4%</td>
+            </tr>
+            <tr>
+              <td>VoiceCraft</td>
+              <td>9.9%</td>
+              <td>10.1%</td>
+              <td>48.8%</td>
+            </tr>
+          </tbody>
+        </table>
 
-<table class="similarity-table">
-  <thead>
-    <tr>
-      <th>Method</th>
-      <th>Cycle-GAN</th>
-      <th>VAW-GAN</th>
-      <th>Emocorrector(Ours)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>EditSpeech</td>
-      <td>10.2%</td>
-      <td>9.8%</td>
-      <td>47.5%</td>
-    </tr>
-    <tr>
-      <td>A3T</td>
-      <td>9.8%</td>
-      <td>9.1%</td>
-      <td>49.3%</td>
-    </tr>
-    <tr>
-      <td>FluentSpeech</td>
-      <td>8.8%</td>
-      <td>8.3%</td>
-      <td>46.4%</td>
-    </tr>
-    <tr>
-      <td>VoiceCraft</td>
-      <td>9.9%</td>
-      <td>10.1%</td>
-      <td>48.8%</td>
-    </tr>
-
-  </tbody>
-</table>
-
-</section>
-</article>
-</main>
+      </section>
+    </article>
+  </main>
 </div>
 
 <script>
-	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-	ga('create', 'UA-139981676-1', 'auto');
-	ga('send', 'pageview');
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-139981676-1', 'auto');
+  ga('send', 'pageview');
 </script>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
 
 <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-         HTML: ["input/TeX","output/HTML-CSS"],
-         TeX: {
-                Macros: {
-                         bm: ["\\boldsymbol{#1}", 1],
-                         argmax: ["\\mathop{\\rm arg\\,max}\\limits"],
-                         argmin: ["\\mathop{\\rm arg\\,min}\\limits"]},
-                extensions: ["AMSmath.js","AMSsymbols.js"],
-                equationNumbers: { autoNumber: "AMS" } },
-         extensions: ["tex2jax.js"],
-         jax: ["input/TeX","output/HTML-CSS"],
-         tex2jax: { inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-                    displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
-                    processEscapes: true },
-         "HTML-CSS": { availableFonts: ["TeX"],
-                       linebreaks: { automatic: true } }
-     });
- </script>
+  MathJax.Hub.Config({
+    HTML: ["input/TeX","output/HTML-CSS"],
+    TeX: {
+      Macros: {
+        bm: ["\\boldsymbol{#1}", 1],
+        argmax: ["\\mathop{\\rm arg\\,max}\\limits"],
+        argmin: ["\\mathop{\\rm arg\\,min}\\limits"]
+      },
+      extensions: ["AMSmath.js","AMSsymbols.js"],
+      equationNumbers: { autoNumber: "AMS" }
+    },
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX","output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": {
+      availableFonts: ["TeX"],
+      linebreaks: { automatic: true }
+    }
+  });
+</script>
 
- <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-       tex2jax: {
-         skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-       }
-     });
- </script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  });
+</script>
 
- <script type="text/javascript" async
-   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML">
- </script>
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
 </body>
 </html>

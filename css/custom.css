@@ -222,3 +222,14 @@ table td audio {
   margin: 0 15px; /* 调整箭头和文本的间距 */
   transform: scale(1.5); /* 通过缩放增加箭头的视觉效果 */
 }
+.audio-desc {
+  background-color: #e0f7fa; /* 浅蓝色背景 */
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-style: normal;  /* 去掉斜体 */
+  color: #00796b;      /* 深蓝绿色文字 */
+  font-size: 0.95em;
+  text-align: center;
+  margin-top: 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
